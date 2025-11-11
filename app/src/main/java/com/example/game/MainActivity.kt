@@ -4,14 +4,20 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.List
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import com.example.game.ui.theme.GameTheme  // ← ДОБАВЬТЕ ЭТОТ ИМПОРТ
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.example.game.ui.theme.GameTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -23,21 +29,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    var currentScreen by remember { mutableStateOf("main") }
-                    var registeredPlayer by remember { mutableStateOf<Player?>(null) }
-
-                    when (currentScreen) {
-                        "main" -> MainScreen(
-                            onNavigateToRegistration = { currentScreen = "registration" },
-                            player = registeredPlayer
-                        )
-                        "registration" -> RegistrationScreen(
-                            onRegistrationComplete = { player ->
-                                registeredPlayer = player
-                                currentScreen = "main"
-                            }
-                        )
-                    }
+                    MainApp()
                 }
             }
         }
@@ -45,51 +37,61 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun MainScreen(
-    onNavigateToRegistration: () -> Unit,
-    player: Player?
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(
-            text = "Игра Жуки",
-            style = MaterialTheme.typography.headlineMedium
-        )
+fun MainApp() {
+    val navController = rememberNavController()
 
-        Spacer(modifier = Modifier.height(32.dp))
+    Scaffold(
+        bottomBar = {
+            NavigationBar {
+                val currentRoute = navController.currentDestination?.route
 
-        Button(
-            onClick = onNavigateToRegistration,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Регистрация игрока")
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Person, contentDescription = "Регистрация") },
+                    label = { Text("Регистрация") },
+                    selected = currentRoute == "registration",
+                    onClick = { navController.navigate("registration") }
+                )
+
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Info, contentDescription = "Правила") },
+                    label = { Text("Правила") },
+                    selected = currentRoute == "rules",
+                    onClick = { navController.navigate("rules") }
+                )
+
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.List, contentDescription = "Авторы") },
+                    label = { Text("Авторы") },
+                    selected = currentRoute == "authors",
+                    onClick = { navController.navigate("authors") }
+                )
+
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Settings, contentDescription = "Настройки") },
+                    label = { Text("Настройки") },
+                    selected = currentRoute == "settings",
+                    onClick = { navController.navigate("settings") }
+                )
+            }
         }
+    ) { innerPadding ->
+        NavHost(
+            navController = navController,
+            startDestination = "registration",
+            modifier = Modifier.padding(innerPadding)
+        ) {
+            composable("registration") {
+                RegistrationScreen()
+            }
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Показываем информацию о зарегистрированном игроке
-        player?.let {
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp)
-                ) {
-                    Text(
-                        text = "Зарегистрированный игрок:",
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text("ФИО: ${it.fullName}")
-                    Text("Курс: ${it.course}")
-                    Text("Уровень: ${it.difficultyLevel}")
-                    Text("Знак зодиака: ${it.zodiacSign}")
-                }
+            composable("rules") {
+                Rules()
+            }
+            composable("authors") {
+                Authors()
+            }
+            composable("settings") {
+                Settings()
             }
         }
     }

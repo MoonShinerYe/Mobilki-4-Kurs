@@ -1,6 +1,5 @@
 package com.example.game
 
-import com.example.game.ui.theme.GameTheme
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -15,20 +14,19 @@ import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RegistrationScreen(
-    onRegistrationComplete: (Player) -> Unit = {}
-) {
+fun RegistrationScreen() {
     var fullName by remember { mutableStateOf("") }
     var gender by remember { mutableStateOf("") }
     var selectedCourse by remember { mutableStateOf(1) }
     var difficultyLevel by remember { mutableStateOf(3) }
-    var birthDate by remember { mutableStateOf(Calendar.getInstance()) }
 
-    val zodiacSign = remember(birthDate) {
-        Player.getZodiacSign(
-            birthDate.get(Calendar.DAY_OF_MONTH),
-            birthDate.get(Calendar.MONTH)
-        )
+    // Простая дата вместо Calendar
+    var day by remember { mutableStateOf("1") }
+    var month by remember { mutableStateOf("1") }
+    var year by remember { mutableStateOf("2000") }
+
+    val zodiacSign = remember(day, month, year) {
+        getZodiacSign(day.toIntOrNull() ?: 1, (month.toIntOrNull() ?: 1) - 1)
     }
 
     var showResult by remember { mutableStateOf(false) }
@@ -79,7 +77,7 @@ fun RegistrationScreen(
         // Курс
         Text("Курс", fontWeight = FontWeight.Medium)
         var expanded by remember { mutableStateOf(false) }
-        val courses = listOf("1 курс", "2 курс", "3 курс", "4 курс", "5 курс", "6 курс")
+        val courses = listOf("1 курс", "2 курс", "3 курс", "4 курс")
 
         ExposedDropdownMenuBox(
             expanded = expanded,
@@ -136,51 +134,27 @@ fun RegistrationScreen(
         // Дата рождения
         Text("Дата рождения", fontWeight = FontWeight.Medium)
 
-        // Простой выбор даты
-        Column {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                // День
-                var day by remember {
-                    mutableStateOf(birthDate.get(Calendar.DAY_OF_MONTH).toString())
-                }
-                OutlinedTextField(
-                    value = day,
-                    onValueChange = {
-                        day = it
-                        birthDate.set(Calendar.DAY_OF_MONTH, it.toIntOrNull() ?: 1)
-                    },
-                    label = { Text("День") },
-                    modifier = Modifier.weight(1f)
-                )
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            OutlinedTextField(
+                value = day,
+                onValueChange = { day = it },
+                label = { Text("День") },
+                modifier = Modifier.weight(1f)
+            )
 
-                // Месяц
-                var month by remember {
-                    mutableStateOf((birthDate.get(Calendar.MONTH) + 1).toString())
-                }
-                OutlinedTextField(
-                    value = month,
-                    onValueChange = {
-                        month = it
-                        birthDate.set(Calendar.MONTH, (it.toIntOrNull() ?: 1) - 1)
-                    },
-                    label = { Text("Месяц") },
-                    modifier = Modifier.weight(1f)
-                )
+            OutlinedTextField(
+                value = month,
+                onValueChange = { month = it },
+                label = { Text("Месяц") },
+                modifier = Modifier.weight(1f)
+            )
 
-                // Год
-                var year by remember {
-                    mutableStateOf(birthDate.get(Calendar.YEAR).toString())
-                }
-                OutlinedTextField(
-                    value = year,
-                    onValueChange = {
-                        year = it
-                        birthDate.set(Calendar.YEAR, it.toIntOrNull() ?: 2000)
-                    },
-                    label = { Text("Год") },
-                    modifier = Modifier.weight(1f)
-                )
-            }
+            OutlinedTextField(
+                value = year,
+                onValueChange = { year = it },
+                label = { Text("Год") },
+                modifier = Modifier.weight(1f)
+            )
         }
 
         // Знак зодиака
@@ -206,15 +180,6 @@ fun RegistrationScreen(
         Button(
             onClick = {
                 if (fullName.isNotEmpty() && gender.isNotEmpty()) {
-                    val player = Player(
-                        fullName = fullName,
-                        gender = gender,
-                        course = courses[selectedCourse - 1],
-                        difficultyLevel = difficultyLevel,
-                        birthDate = birthDate,
-                        zodiacSign = zodiacSign
-                    )
-                    onRegistrationComplete(player)
                     showResult = true
                 }
             },
@@ -226,41 +191,46 @@ fun RegistrationScreen(
 
         // Результат
         if (showResult) {
-            RegistrationResult(
-                player = Player(
-                    fullName = fullName,
-                    gender = gender,
-                    course = courses[selectedCourse - 1],
-                    difficultyLevel = difficultyLevel,
-                    birthDate = birthDate,
-                    zodiacSign = zodiacSign
-                )
-            )
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = "Регистрация завершена!",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp
+                    )
+                    Text("ФИО: $fullName")
+                    Text("Пол: $gender")
+                    Text("Курс: ${courses[selectedCourse - 1]}")
+                    Text("Уровень сложности: $difficultyLevel")
+                    Text("Дата рождения: $day.$month.$year")
+                    Text("Знак зодиака: $zodiacSign")
+                }
+            }
         }
     }
 }
 
-@Composable
-fun RegistrationResult(player: Player) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Text(
-                text = "Регистрация завершена!",
-                fontWeight = FontWeight.Bold,
-                fontSize = 18.sp
-            )
-            Text("ФИО: ${player.fullName}")
-            Text("Пол: ${player.gender}")
-            Text("Курс: ${player.course}")
-            Text("Уровень сложности: ${player.difficultyLevel}")
-            Text("Дата рождения: ${player.birthDate.get(Calendar.DAY_OF_MONTH)}.${player.birthDate.get(Calendar.MONTH) + 1}.${player.birthDate.get(Calendar.YEAR)}")
-            Text("Знак зодиака: ${player.zodiacSign}")
-        }
+// Функция расчета знака зодиака
+fun getZodiacSign(day: Int, month: Int): String {
+    return when (month) {
+        0 -> if (day < 20) "Козерог" else "Водолей"
+        1 -> if (day < 19) "Водолей" else "Рыбы"
+        2 -> if (day < 21) "Рыбы" else "Овен"
+        3 -> if (day < 20) "Овен" else "Телец"
+        4 -> if (day < 21) "Телец" else "Близнецы"
+        5 -> if (day < 21) "Близнецы" else "Рак"
+        6 -> if (day < 23) "Рак" else "Лев"
+        7 -> if (day < 23) "Лев" else "Дева"
+        8 -> if (day < 23) "Дева" else "Весы"
+        9 -> if (day < 23) "Весы" else "Скорпион"
+        10 -> if (day < 22) "Скорпион" else "Стрелец"
+        11 -> if (day < 22) "Стрелец" else "Козерог"
+        else -> "Неизвестно"
     }
 }
