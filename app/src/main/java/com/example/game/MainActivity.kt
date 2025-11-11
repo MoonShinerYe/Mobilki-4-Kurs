@@ -1,5 +1,8 @@
 package com.example.game
 
+import androidx.compose.ui.geometry.Offset
+import kotlin.math.sqrt
+import androidx.compose.material.icons.filled.PlayArrow
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -18,6 +21,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.game.ui.theme.GameTheme
+import androidx.compose.ui.input.pointer.pointerInput
+import kotlinx.coroutines.delay
+import kotlin.random.Random
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,6 +41,9 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+}
+fun Offset.getDistance(): Float {
+    return sqrt(x * x + y * y)
 }
 
 @Composable
@@ -72,6 +82,14 @@ fun MainApp() {
                     selected = currentRoute == "settings",
                     onClick = { navController.navigate("settings") }
                 )
+
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.PlayArrow, contentDescription = "Игра") },
+                    label = { Text("Игра") },
+                    selected = currentRoute == "game",
+                    onClick = { navController.navigate("game") }
+                )
+
             }
         }
     ) { innerPadding ->
@@ -92,6 +110,11 @@ fun MainApp() {
             }
             composable("settings") {
                 Settings()
+            }
+            composable("game") {
+                GameScreen(
+                    onBack = { navController.navigate("registration") }
+                )
             }
         }
     }

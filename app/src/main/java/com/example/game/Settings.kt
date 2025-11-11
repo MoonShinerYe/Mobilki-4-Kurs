@@ -12,10 +12,11 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun Settings() {
-    var gameSpeed by remember { mutableStateOf(5f) }
-    var maxInsects by remember { mutableStateOf(10) }
-    var bonusInterval by remember { mutableStateOf(15) }
-    var roundDuration by remember { mutableStateOf(60) }
+    // Используем настройки из общего объекта
+    var gameSpeed by remember { mutableStateOf(GameSettings.gameSpeed) }
+    var maxInsects by remember { mutableStateOf(GameSettings.maxInsects) }
+    var bonusInterval by remember { mutableStateOf(GameSettings.bonusInterval) }
+    var roundDuration by remember { mutableStateOf(GameSettings.roundDuration) }
 
     Column(
         modifier = Modifier
@@ -31,6 +32,7 @@ fun Settings() {
 
         Spacer(modifier = Modifier.height(24.dp))
 
+        // Скорость игры
         Text("Скорость игры: ${gameSpeed.toInt()}", fontWeight = FontWeight.Medium)
         Slider(
             value = gameSpeed,
@@ -42,6 +44,7 @@ fun Settings() {
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Максимальное количество насекомых
         Text("Макс. насекомых: $maxInsects", fontWeight = FontWeight.Medium)
         Slider(
             value = maxInsects.toFloat(),
@@ -53,6 +56,7 @@ fun Settings() {
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Интервал бонусов
         Text("Интервал бонусов: ${bonusInterval}сек", fontWeight = FontWeight.Medium)
         Slider(
             value = bonusInterval.toFloat(),
@@ -64,6 +68,7 @@ fun Settings() {
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Длительность раунда
         Text("Длительность раунда: ${roundDuration}сек", fontWeight = FontWeight.Medium)
         Slider(
             value = roundDuration.toFloat(),
@@ -75,9 +80,14 @@ fun Settings() {
 
         Spacer(modifier = Modifier.height(24.dp))
 
+        // Кнопка сохранения
         Button(
             onClick = {
-                // Логика сохранения настроек
+                // Сохраняем настройки в общий объект
+                GameSettings.gameSpeed = gameSpeed
+                GameSettings.maxInsects = maxInsects
+                GameSettings.bonusInterval = bonusInterval
+                GameSettings.roundDuration = roundDuration
             },
             modifier = Modifier.fillMaxWidth()
         ) {
